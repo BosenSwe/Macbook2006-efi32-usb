@@ -1,4 +1,4 @@
-# How to create a 3-in-1 bootable usb drive on Linux.
+# How to create a 64-bit linux install USB stick that is bootable on a Mac with 32bit EFI (pre 2008 MacBook)
 
 A usb drive with only 1 partition to load grub2 on usb-bootable machines with `Legacy BIOS`, `64bit UEFI` or `32bit UEFI`.
 
@@ -19,6 +19,8 @@ The `x86_64-efi`, `i386-pc` and `i386-efi` folders need to be present in order t
 Now, find the device file for your usb drive. Here, the file is `/dev/sdX`. Replace `X` with the appropriate lower case letter(s) in the commands.
 
 ###### Make sure it's the right drive! (check the capacity and the partitions) :
+
+`lsblk`  # Shows your drives 
 
 `sudo fdisk -l /dev/sdX`
 
