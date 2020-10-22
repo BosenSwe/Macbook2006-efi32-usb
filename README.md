@@ -14,7 +14,7 @@ The `x86_64-efi`, `i386-pc` and `i386-efi` folders need to be present in order t
 
 ###### Install them using the package manager, for instance on Ubuntu :
 
-`sudo apt install grub-pc-bin grub-efi-ia32-bin grub-efi-amd64-bin`
+`sudo apt install grub-efi-ia32-bin`
 
 Now, find the device file for your usb drive. Here, the file is `/dev/sdX`. Replace `X` with the appropriate lower case letter(s) in the commands.
 
@@ -22,7 +22,9 @@ Now, find the device file for your usb drive. Here, the file is `/dev/sdX`. Repl
 
 `lsblk`  # Shows your drives 
 
-`sudo fdisk -l /dev/sdX`
+###### Erase the USB-stick
+`sudo dd if=/dev/zero of=/dev/sdX`
+You can interrupt with ctrl-c after around 10 seconds
 
 ###### Open fdisk :
 
@@ -36,35 +38,37 @@ Now, find the device file for your usb drive. Here, the file is `/dev/sdX`. Repl
 
 `p` `<enter>` # Select primary partition type
 
-`1` `<enter>` # Set partition number to 1
+`<enter>` # Set partition number to 1 (default)
 
 `<enter>` # Start partition at the first possible sector (default)
 
-`<enter>` # Set partition end to the last possible sector (default)
+`+50M` # Set partition end to first possible sector + 50 Megabyte (make the partion 50 Mb)
 
 `t` `<enter>` # Change partition type
 
-`e` `f` `<enter>` # Set partition type to EFI (FAT-12/16/32)
+`ef` `<enter>` # Set partition type to EFI (FAT-12/16/32)
 
 `a` `<enter>` # Enable the bootable flag on partition 1
 
+`n` `<enter>` # Create a new partition
+
+`p` `<enter>` # Select primary partition type
+
+`<enter>` # Set partition number to 2 (default)
+
+`<enter>` # Start partition at the first possible sector (default)
+
+`<enter>` # Set partition end to last possible sector (default)
+
 `w` `<enter>` # Write the partition table
 
-###### Create a fresh filesystem in the newly created partition :
+###### Create a fresh filesystem in the newly created partition 1 :
 
 `sudo mkfs.fat -F32 /dev/sdX1`
 
 ###### Mount the filesystem :
 
 `sudo mount -o umask=000 /dev/sdX1 /mnt`
-
-###### Write the MBR and install the grub files required for legacy BIOS boot on the drive :
-
-`sudo grub-install --no-floppy --boot-directory=/mnt/boot --target=i386-pc /dev/sdX`
-
-###### Install `/EFI/BOOT/BOOTX64.EFI` and other grub files required to load grub from a 64-bit UEFI firmware :
-
-`sudo grub-install --removable --boot-directory=/mnt/boot --efi-directory=/mnt --target=x86_64-efi /dev/sdX`
 
 ###### Install `/EFI/BOOT/BOOTIA32.EFI` and other grub files required for 32-bit UEFI :
 
@@ -74,28 +78,12 @@ Now, find the device file for your usb drive. Here, the file is `/dev/sdX`. Repl
 
 `touch /mnt/boot/grub/grub.cfg`
 
-## Example grub.cfg with Xubuntu 18.04 Live
-(skip this if you already have a working grub.cfg for the usb drive)
 
-###### Create a folder for cd images :
-
-`mkdir /mnt/isos`
-
-###### Create a folder for the OS files :
-
-`mkdir /mnt/isos/xubuntu18_04-i386`
-
-###### Download an Ubuntu cd image (for example: [Xubuntu 18.04 32-bit](http://cdimages.ubuntu.com/xubuntu/releases/18.04.1/release/xubuntu-18.04-desktop-i386.iso)) :
+###### Download an Peppermint image and extract it to partition2 of the USB-stick:
 
 *Note: make sure there is enough space on the usb drive.*
 
-`wget --directory-prefix=/mnt/isos/xubuntu18_04-i386 http://cdimages.ubuntu.com/xubuntu/releases/18.04.1/release/xubuntu-18.04-desktop-i386.iso`
-
-###### Extract `vmlinuz` and `initrd` from the iso archive :
-
-`isoinfo -i /mnt/isos/xubuntu18_04-i386/*.iso -x "/casper/vmlinuz.;1" > /mnt/isos/xubuntu18_04-i386/vmlinuz`
-
-`isoinfo -i /mnt/isos/xubuntu18_04-i386/*.iso -x "/casper/initrd.lz;1" > /mnt/isos/xubuntu18_04-i386/initrd.lz`
+'sudo dd /path/to/Peppermint-10-20191210-amd64.iso /dev/sdX2`
 
 ###### Edit grub.cfg :
 
@@ -104,17 +92,14 @@ Now, find the device file for your usb drive. Here, the file is `/dev/sdX`. Repl
 ###### Write or paste something like this :
 
 ````
-menuentry 'Xubuntu 18.04 i386'{
-	search --set=root --file /isos/xubuntu18_04-i386/vmlinuz
-	linux /isos/xubuntu18_04-i386/vmlinuz locale=fr_FR console-setup/layoutcode=fr boot=casper iso-scan/filename=/isos/xubuntu18_04-i386/xubuntu-18.04-desktop-i386.iso quiet --
-	initrd /isos/xubuntu18_04-i386/initrd.lz
+set default=1
+set timeout=0
+menuentry 'Peppermint 10'{
+	set root=(hd0,2)
+	configfile /boot/grub/grub.cfg
 }
 ````
 
-*Notes :*
-* *The search command on the second line is only useful if you install the bootloader and the OS files on different partitions.*
-* *Remove or change the value of the `locale` parameter to set the language of the live system.*
-* *Remove or change the value of the `console-setup/layoutcode` parameter to change the keyboard layout.*
 
 ###### Save grub.cfg (in nano) :
 
