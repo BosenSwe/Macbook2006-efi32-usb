@@ -83,7 +83,7 @@ You can interrupt with ctrl-c after around 10 seconds
 
 *Note: make sure there is enough space on the usb drive.*
 
-'sudo dd /path/to/Peppermint-10-20191210-amd64.iso /dev/sdX2`
+`sudo dd /path/to/Peppermint-10-20191210-amd64.iso /dev/sdX2 bs=1M`
 
 ###### Edit grub.cfg :
 
