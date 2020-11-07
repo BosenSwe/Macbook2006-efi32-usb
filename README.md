@@ -92,12 +92,8 @@ You can interrupt with ctrl-c after around 10 seconds
 ###### Write or paste something like this :
 
 ````
-set default=1
-set timeout=0
-menuentry 'Peppermint 10'{
-	set root=(hd0,2)
-	configfile /boot/grub/grub.cfg
-}
+set root=(hd0,2)
+configfile /boot/grub/grub.cfg
 ````
 
 
